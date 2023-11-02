@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Anime Bites Code Redemption</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Enter your Anime Bites code:</h1>
+        <input type="text" id="verificationCode" placeholder="Enter your code">
+        <button id="verifyButton">Submit my code</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+        import { getDatabase, ref, update, get } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfPdkDg0TE9nypjCr9WDjHsDG6IGH2jLs",
+  authDomain: "e-deez-nuts.firebaseapp.com",
+  databaseURL: "https://e-deez-nuts-default-rtdb.firebaseio.com",
+  projectId: "e-deez-nuts",
+  storageBucket: "e-deez-nuts.appspot.com",
+  messagingSenderId: "697154537749",
+  appId: "1:697154537749:web:f837eccbd4d244871f011c",
+  measurementId: "G-PNJHWV1S79"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        document.getElementById("verifyButton").addEventListener("click", () => {
+    const code = document.getElementById("verificationCode").value;
+    const codeRef = ref(database, 'codes/' + code);
+
+    get(codeRef)
+        .then((snapshot) => {
+            const codeData = snapshot.val();
+            console.log("Entered Code:", code);
+            console.log("Code Data:", codeData);
+
+            if (codeData !== null && codeData.redeemed === false) {
+                console.log("Code exists and is not redeemed.");
+                update(codeRef, { redeemed: true })
+                    .then(() => {
+                        console.log("Code marked as redeemed.");
+                        window.location.href = "spin-the-wheel.html";
+                    })
+                    .catch((updateError) => {
+                        console.error("Error updating code:", updateError);
+                    });
+            } else if (codeData !== null && codeData.redeemed === true) {
+                console.log("Code is already redeemed.");
+                alert("Code has already been redeemed.");
+            } else {
+                console.log("Code does not exist.");
+                alert("Invalid code or code does not exist in the system.");
+            }
+        })
+        .catch((error) => {
+            console.error("Error reading code from the database:", error);
+            alert("An error occurred while verifying the code.");
+        });
+});
+
+
+</script>
+</body>
+</html>
+
+  
