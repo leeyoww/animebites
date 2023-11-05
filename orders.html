@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Order Graham Balls</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <h1>Order Graham Balls</h1>
+    <form id="order-form">
+      <!-- Customer information -->
+      <label for="name">Name:</label>
+      <input type="text" id="name" required>
+
+      <label for="address">Address:</label>
+      <input type="text" id="address" required>
+
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" required>
+
+      <!-- Flavor is set to "Regular" -->
+      <input type="hidden" id="flavor" value="Regular">
+
+      <label for="quantity-select">Select Bundle Quantity:</label>
+      <select id="quantity-select">
+        <option value="5">5 pieces - PHP30</option>
+        <option value="10">10 pieces - PHP60</option>
+      </select>
+
+      <label for="topping-select">Select Topping:</label>
+      <select id="topping-select">
+        <option value="plain">Plain</option>
+        <option value="sprinkles">Sprinkles (+PHP5)</option>
+      </select>
+
+      <button type="submit">Place Order</button>
+    </form>
+
+    <div id="order-summary">
+      <h2>Order Summary</h2>
+      <p id="name-summary">Name: </p>
+      <p id="address-summary">Address: </p>
+      <p id="phone-summary">Phone Number: </p>
+      <p id="flavor-summary">Flavor: Regular</p>
+      <p id="topping-summary">Topping: </p>
+      <p id="quantity-summary">Quantity: </p>
+      <p id="total-summary">Total: ₱</p>
+    </div>
+    <script type="module">
+        // Initialize Firebase (use your Firebase configuration)
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+
+   const firebaseConfig = {
+    apiKey: "AIzaSyBfPdkDg0TE9nypjCr9WDjHsDG6IGH2jLs",
+    authDomain: "e-deez-nuts.firebaseapp.com",
+    databaseURL: "https://e-deez-nuts-default-rtdb.firebaseio.com",
+    projectId: "e-deez-nuts",
+    storageBucket: "e-deez-nuts.appspot.com",
+    messagingSenderId: "697154537749",
+    appId: "1:697154537749:web:f837eccbd4d244871f011c",
+    measurementId: "G-PNJHWV1S79"
+  };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const orderForm = document.getElementById('order-form');
+        const toppingSelect = document.getElementById('topping-select');
+        const quantitySelect = document.getElementById('quantity-select');
+        const totalSummary = document.getElementById('total-summary');
+        const nameInput = document.getElementById('name');
+        const addressInput = document.getElementById('address');
+        const phoneInput = document.getElementById('phone');
+
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Get customer details
+            const customerName = nameInput.value;
+            const customerAddress = addressInput.value;
+            const customerPhone = phoneInput.value;
+
+            // Flavor is fixed to "Regular"
+            const selectedFlavor = 'Regular';
+            const selectedTopping = toppingSelect.value;
+            const selectedQuantity = parseInt(quantitySelect.value);
+
+            // Calculate the total based on the selected quantity and topping
+            const basePrice = selectedQuantity === 5 ? 30 : 60;
+            const sprinklesPrice = selectedTopping === 'sprinkles' ? (selectedQuantity === 5 ? 5 : 10) : 0;
+            const shippingFeePHP = 25;
+            const totalPHP = basePrice + sprinklesPrice + shippingFeePHP;
+
+            // Update the total summary in the HTML with the currency symbol (₱)
+            totalSummary.textContent = `Total: ₱${totalPHP}`;
+
+            // Add the order to Firestore
+            try {
+                const docRef = await addDoc(collection(db, "orders"), {
+                    customerName,
+                    customerAddress,
+                    customerPhone,
+                    flavor: selectedFlavor,
+                    topping: selectedTopping,
+                    quantity: selectedQuantity,
+                    total: totalPHP,
+                });
+                alert('Order placed successfully!');
+                orderForm.reset();
+            } catch (error) {
+                console.error('Error placing order: ', error);
+                alert('Error placing order. Please try again.');
+            }
+        });
+    </script>
+
+  </body>
+</html>
